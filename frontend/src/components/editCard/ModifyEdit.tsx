@@ -72,6 +72,12 @@ export const renderTagDetails = (
       oldValue={oldTagDetails?.description}
       showDiff={showDiff}
     />
+    <ChangeRow
+      name="Aliases"
+      newValue={tagDetails.added_aliases?.join(", ")}
+      oldValue={tagDetails.removed_aliases?.join(", ")}
+      showDiff={showDiff}
+    />
     <LinkedChangeRow
       name="Category"
       newEntity={{
@@ -82,12 +88,6 @@ export const renderTagDetails = (
         name: oldTagDetails?.category?.name,
         link: oldTagDetails?.category && categoryHref(oldTagDetails.category),
       }}
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Aliases"
-      newValue={tagDetails.added_aliases?.join(", ")}
-      oldValue={tagDetails.removed_aliases?.join(", ")}
       showDiff={showDiff}
     />
   </>

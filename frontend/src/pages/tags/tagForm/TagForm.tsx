@@ -1,9 +1,9 @@
-import { FC } from "react";
+import { FC, useState, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, Controller, FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { Button, Form } from "react-bootstrap";
+import { Button, Row, Form, Tab, Tabs } from "react-bootstrap";
 import Select from "react-select";
 import { groupBy, sortBy } from "lodash-es";
 
@@ -13,10 +13,12 @@ import {
   TagFragment as Tag,
 } from "src/graphql";
 
-import { EditNote } from "src/components/form";
+import { EditNote, SubmitButtons } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
+import { renderTagDetails } from "src/components/editCard/ModifyEdit";
 
+import DiffTag from "./diff";
 import { TagSchema, TagFormData } from "./schema";
 import { InitialTag } from "./types";
 
@@ -34,6 +36,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
     handleSubmit,
     formState: { errors },
     control,
+    watch,
   } = useForm<TagFormData>({
     resolver: yupResolver(TagSchema),
     defaultValues: {
@@ -43,6 +46,14 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       category: initial?.category ?? tag?.category,
     },
   });
+
+  const fieldData = watch();
+  const [oldChanges, newChanges] = useMemo(
+    () => DiffTag(TagSchema.cast(fieldData), tag),
+    [fieldData, tag]
+  );
+
+  const [activeTab, setActiveTab] = useState("details");
 
   const { loading: loadingCategories, data: categoryData } = useCategories();
 
@@ -74,77 +85,95 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
 
   return (
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name" className="mb-3">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          type="text"
-          className={cx({ "is-invalid": errors.name })}
-          placeholder="Name"
-          {...register("name")}
-        />
-        <div className="invalid-feedback">{errors?.name?.message}</div>
-      </Form.Group>
-
-      <Form.Group controlId="description" className="mb-3">
-        <Form.Label>Description</Form.Label>
-        <Form.Control placeholder="Description" {...register("description")} />
-      </Form.Group>
-
-      <Form.Group className="mb-3">
-        <Form.Label>Aliases</Form.Label>
-        <Controller
-          name="aliases"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <MultiSelect
-              values={value}
-              onChange={onChange}
-              placeholder="Enter name..."
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(key) => key && setActiveTab(key)}
+        className="d-flex"
+      >
+        <Tab eventKey="details" title="Details">
+          <Form.Group controlId="name" className="mb-3">
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              type="text"
+              className={cx({ "is-invalid": errors.name })}
+              placeholder="Name"
+              {...register("name")}
             />
-          )}
-        />
-      </Form.Group>
+            <div className="invalid-feedback">{errors?.name?.message}</div>
+          </Form.Group>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Category</Form.Label>
-        <Controller
-          name="category"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <Select
-              classNamePrefix="react-select"
-              className={cx({ "is-invalid": errors.category })}
-              onChange={(opt) =>
-                onChange(opt ? { id: opt.value, name: opt.label } : null)
-              }
-              options={categoryObj}
-              isClearable
-              placeholder="Category"
-              defaultValue={
-                value ? categories.find((s) => s.value === value.id) : null
-              }
+          <Form.Group controlId="description" className="mb-3">
+            <Form.Label>Description</Form.Label>
+            <Form.Control
+              placeholder="Description"
+              {...register("description")}
             />
-          )}
-        />
-        <div className="invalid-feedback">
-          {(errors?.category as FieldError | undefined)?.message}
-        </div>
-      </Form.Group>
+          </Form.Group>
 
-      <EditNote register={register} error={errors.note} />
+          <Form.Group className="mb-3">
+            <Form.Label>Aliases</Form.Label>
+            <Controller
+              name="aliases"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <MultiSelect
+                  values={value}
+                  onChange={onChange}
+                  placeholder="Enter name..."
+                />
+              )}
+            />
+          </Form.Group>
 
-      <Form.Group className="d-flex mb-3">
-        <Button type="submit" disabled className="d-none" aria-hidden="true" />
-        <Button type="submit" disabled={saving}>
-          Submit Edit
-        </Button>
-        <Button type="reset" className="ms-auto me-2">
-          Reset
-        </Button>
-        <Button variant="danger" onClick={() => history.goBack()}>
-          Cancel
-        </Button>
-      </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Category</Form.Label>
+            <Controller
+              name="category"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select
+                  classNamePrefix="react-select"
+                  className={cx({ "is-invalid": errors.category })}
+                  onChange={(opt) =>
+                    onChange(opt ? { id: opt.value, name: opt.label } : null)
+                  }
+                  options={categoryObj}
+                  isClearable
+                  placeholder="Category"
+                  defaultValue={
+                    value ? categories.find((s) => s.value === value.id) : null
+                  }
+                />
+              )}
+            />
+            <div className="invalid-feedback">
+              {(errors?.category as FieldError | undefined)?.message}
+            </div>
+          </Form.Group>
+
+          <div className="d-flex mt-1">
+            <Button
+              variant="danger"
+              className="ms-auto me-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button className="me-1" onClick={() => setActiveTab("confirm")}>
+              Next
+            </Button>
+          </div>
+        </Tab>
+
+        <Tab eventKey="confirm" title="Confirm" className="mt-3">
+          {renderTagDetails(newChanges, oldChanges, true)}
+          <Row className="my-4">
+            <EditNote register={register} error={errors.note} />
+          </Row>
+
+          <SubmitButtons disabled={saving} />
+        </Tab>
+      </Tabs>
     </Form>
   );
 };

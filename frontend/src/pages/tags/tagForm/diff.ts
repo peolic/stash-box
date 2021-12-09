@@ -1,37 +1,37 @@
 import { OldTagDetails, TagDetails } from "src/components/editCard/ModifyEdit";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import { TagFragment } from "src/graphql";
 import { CastedTagFormData } from "./schema";
 import { diffValue, diffArray } from "src/utils";
 
 const selectTagDetails = (
   data: CastedTagFormData,
-  original: Tag
+  original: TagFragment | null | undefined
 ): [Required<OldTagDetails>, Required<TagDetails>] => {
   const [addedAliases, removedAliases] = diffArray(
-    data?.aliases,
-    original.aliases,
+    data.aliases,
+    original?.aliases ?? [],
     (a) => a
   );
 
   return [
     {
-      name: diffValue(original.name, data.name),
-      description: diffValue(original.description, data.description),
+      name: diffValue(original?.name, data.name),
+      description: diffValue(original?.description, data.description),
       category:
-        original.category?.id !== data.category?.id &&
-        original.category?.id &&
-        original.category.name
+        original?.category?.id !== data.category?.id &&
+        original?.category?.id &&
+        original?.category.name
           ? {
-              id: original.category.id,
-              name: original.category.name,
+              id: original?.category.id,
+              name: original?.category.name,
             }
           : null,
     },
     {
-      name: diffValue(data.name, original.name),
-      description: diffValue(data.description, original.description),
+      name: diffValue(data.name, original?.name),
+      description: diffValue(data.description, original?.description),
       category:
-        data.category?.id !== original.category?.id &&
+        data.category?.id !== original?.category?.id &&
         data.category?.id &&
         data.category?.name
           ? {
