@@ -43,3 +43,36 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 
 	return currentUser, nil
 }
+
+func (r *queryResolver) CheckInviteKeys(ctx context.Context, input []uuid.UUID) ([]uuid.UUID, error) {
+	fac := r.getRepoFactory(ctx)
+	iqb := fac.Invite()
+	aqb := fac.PendingActivation()
+
+	var validKeys []uuid.UUID
+	for _, inviteKey := range input {
+		key, err := iqb.Find(inviteKey)
+		if err != nil {
+			return nil, err
+		}
+
+		// invalid invite key
+		if key == nil {
+			continue
+		}
+
+		// ensure key isn't already used
+		a, err := aqb.FindByInviteKey(inviteKey.String(), models.PendingActivationTypeNewUser)
+		if err != nil {
+			return nil, err
+		}
+
+		// key already used
+		if a != nil {
+			continue
+		}
+
+		validKeys = append(validKeys, key.ID)
+	}
+	return validKeys, nil
+}

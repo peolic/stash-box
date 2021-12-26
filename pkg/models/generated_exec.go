@@ -250,6 +250,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		CheckInviteKeys              func(childComplexity int, input []uuid.UUID) int
 		FindEdit                     func(childComplexity int, id uuid.UUID) int
 		FindPerformer                func(childComplexity int, id uuid.UUID) int
 		FindScene                    func(childComplexity int, id uuid.UUID) int
@@ -595,6 +596,7 @@ type QueryResolver interface {
 	QueryEdits(ctx context.Context, editFilter *EditFilterType, filter *QuerySpec) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
 	QueryUsers(ctx context.Context, userFilter *UserFilterType, filter *QuerySpec) (*QueryUsersResultType, error)
+	CheckInviteKeys(ctx context.Context, input []uuid.UUID) ([]uuid.UUID, error)
 	Me(ctx context.Context) (*User, error)
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
@@ -1887,6 +1889,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerStudio.Studio(childComplexity), true
+
+	case "Query.checkInviteKeys":
+		if e.complexity.Query.CheckInviteKeys == nil {
+			break
+		}
+
+		args, err := ec.field_Query_checkInviteKeys_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CheckInviteKeys(childComplexity, args["input"].([]uuid.UUID)), true
 
 	case "Query.findEdit":
 		if e.complexity.Query.FindEdit == nil {
@@ -4225,6 +4239,8 @@ type Query {
   """Find user by ID or username"""
   findUser(id: ID, username: String): User @hasRole(role: READ)
   queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @hasRole(role: ADMIN)
+  """Check invite tokens for validity"""
+  checkInviteKeys(input: [ID!]!): [ID!]
 
   """Returns currently authenticated user"""
   me: User
@@ -4957,6 +4973,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_checkInviteKeys_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []uuid.UUID
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -12407,6 +12438,45 @@ func (ec *executionContext) _Query_queryUsers(ctx context.Context, field graphql
 	res := resTmp.(*QueryUsersResultType)
 	fc.Result = res
 	return ec.marshalNQueryUsersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryUsersResultType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_checkInviteKeys(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_checkInviteKeys_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().CheckInviteKeys(rctx, args["input"].([]uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -23178,6 +23248,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			})
+		case "checkInviteKeys":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_checkInviteKeys(ctx, field)
 				return res
 			})
 		case "me":

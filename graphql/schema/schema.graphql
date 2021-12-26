@@ -52,6 +52,8 @@ type Query {
   """Find user by ID or username"""
   findUser(id: ID, username: String): User @hasRole(role: READ)
   queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @hasRole(role: ADMIN)
+  """Check invite tokens for validity"""
+  checkInviteKeys(input: [ID!]!): [ID!]
 
   """Returns currently authenticated user"""
   me: User
