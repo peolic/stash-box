@@ -1,5 +1,5 @@
 import { FC, useEffect } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory, Link, Prompt } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -39,7 +39,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
   } = useForm<TagFormData>({
     resolver: yupResolver(schema),
@@ -84,6 +84,8 @@ const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
 
   return (
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
+      <Prompt when={isDirty} message={"Discard unsaved changes?"} />
+
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control

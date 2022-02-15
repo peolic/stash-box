@@ -3,7 +3,7 @@ import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { Link } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
@@ -36,7 +36,7 @@ const StudioForm: FC<StudioProps> = ({
     control,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<StudioFormData>({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
@@ -84,6 +84,8 @@ const StudioForm: FC<StudioProps> = ({
 
   return (
     <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
+      <Prompt when={isDirty} message={"Discard unsaved changes?"} />
+
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}

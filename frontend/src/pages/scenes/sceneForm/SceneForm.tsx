@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
@@ -44,7 +44,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     control,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<SceneFormData>({
     resolver: yupResolver(SceneSchema),
     mode: "onBlur",
@@ -244,6 +244,8 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
 
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
+      <Prompt when={isDirty} message={"Discard unsaved changes?"} />
+
       <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
         <Tab eventKey="details" title="Details" className="col-xl-9">
           <Row>

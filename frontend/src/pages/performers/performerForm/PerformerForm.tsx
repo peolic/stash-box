@@ -7,7 +7,7 @@ import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
 import { sortBy, uniq, uniqBy } from "lodash-es";
-import { Link } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -152,7 +152,7 @@ const PerformerForm: FC<PerformerProps> = ({
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<PerformerFormData>({
     resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
@@ -287,6 +287,9 @@ const PerformerForm: FC<PerformerProps> = ({
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer.id} {...register("id")} />
+
+      <Prompt when={isDirty} message={"Discard unsaved changes?"} />
+
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}
