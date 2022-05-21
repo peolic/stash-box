@@ -204,6 +204,27 @@ const PerformerForm: FC<PerformerProps> = ({
     if (!showBreastType) setValue("breastType", BreastTypeEnum.NA);
   }, [showBreastType, setValue]);
 
+  const handleMeasurementsPaste = (
+    e: React.ClipboardEvent<HTMLInputElement>
+  ) => {
+    const value = e.clipboardData.getData("text/plain");
+    if (!value) return;
+    const parts = value.split(/\s*-\s*/g);
+    if (parts.length !== 3) return;
+
+    const fields = ["braSize", "waistSize", "hipSize"] as const;
+    if (
+      fields.every((field, i) =>
+        PerformerSchema.fields[field].isValidSync(parts[i])
+      )
+    ) {
+      e.preventDefault();
+      fields.forEach((field, i) => {
+        setValue(field, parts[i]);
+      });
+    }
+  };
+
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
       <option key={obj.value} value={obj.value} disabled={!!obj.disabled}>
@@ -455,6 +476,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Control
                   className={cx({ "is-invalid": errors.braSize })}
                   {...register("braSize")}
+                  onPaste={handleMeasurementsPaste}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors?.braSize?.message}
@@ -468,6 +490,7 @@ const PerformerForm: FC<PerformerProps> = ({
                   className={cx({ "is-invalid": errors.waistSize })}
                   type="number"
                   {...register("waistSize")}
+                  onPaste={handleMeasurementsPaste}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors?.waistSize?.message}
@@ -481,6 +504,7 @@ const PerformerForm: FC<PerformerProps> = ({
                   className={cx({ "is-invalid": errors.hipSize })}
                   type="number"
                   {...register("hipSize")}
+                  onPaste={handleMeasurementsPaste}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors?.hipSize?.message}
