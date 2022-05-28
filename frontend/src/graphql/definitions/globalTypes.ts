@@ -245,6 +245,8 @@ export interface EditQueryInput {
   target_type?: TargetTypeEnum | null;
   target_id?: string | null;
   is_favorite?: boolean | null;
+  containing_type?: TargetTypeEnum | null;
+  containing_id?: string | null;
   page: number;
   per_page: number;
   direction: SortDirectionEnum;

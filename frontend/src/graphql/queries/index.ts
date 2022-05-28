@@ -45,6 +45,10 @@ import {
   PendingEditsCount,
   PendingEditsCountVariables,
 } from "../definitions/PendingEditsCount";
+import {
+  PendingSceneEditsCount,
+  PendingSceneEditsCountVariables,
+} from "../definitions/PendingSceneEditsCount";
 import { Site, SiteVariables } from "../definitions/Site";
 import { Sites } from "../definitions/Sites";
 import { Draft, DraftVariables } from "../definitions/Draft";
@@ -74,6 +78,7 @@ import PublicUserQuery from "./PublicUser.gql";
 import ConfigQuery from "./Config.gql";
 import VersionQuery from "./Version.gql";
 import PendingEditsCountQuery from "./PendingEditsCount.gql";
+import PendingSceneEditsCountQuery from "./PendingSceneEditsCount.gql";
 import SiteQuery from "./Site.gql";
 import SitesQuery from "./Sites.gql";
 import DraftQuery from "./Draft.gql";
@@ -228,6 +233,14 @@ export const useVersion = () => useQuery<Version>(VersionQuery);
 export const usePendingEditsCount = (variables: PendingEditsCountVariables) =>
   useQuery<PendingEditsCount, PendingEditsCountVariables>(
     PendingEditsCountQuery,
+    { variables }
+  );
+
+export const usePendingSceneEditsCount = (
+  variables: PendingSceneEditsCountVariables
+) =>
+  useQuery<PendingSceneEditsCount, PendingSceneEditsCountVariables>(
+    PendingSceneEditsCountQuery,
     { variables }
   );
 

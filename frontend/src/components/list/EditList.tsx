@@ -15,6 +15,10 @@ import List from "./List";
 
 interface EditsProps {
   id?: string;
+  containing?: {
+    id: string;
+    type: TargetTypeEnum;
+  };
   sort?: EditSortEnum;
   direction?: SortDirectionEnum;
   type?: TargetTypeEnum;
@@ -28,6 +32,7 @@ const PER_PAGE = 20;
 
 const EditListComponent: FC<EditsProps> = ({
   id,
+  containing,
   sort,
   direction,
   type,
@@ -58,6 +63,8 @@ const EditListComponent: FC<EditsProps> = ({
     input: {
       target_type: selectedType,
       target_id: id,
+      containing_id: containing?.id,
+      containing_type: containing?.type,
       status: selectedStatus,
       operation: selectedOperation,
       user_id: userId,

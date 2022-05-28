@@ -1,0 +1,17 @@
+query PendingSceneEditsCount(
+  $type: TargetTypeEnum!
+  $containingType: TargetTypeEnum!
+  $containingID: ID!
+) {
+  queryEdits(
+    input: {
+      target_type: $type
+      containing_type: $containingType
+      containing_id: $containingID
+      status: PENDING
+      per_page: 1
+    }
+  ) {
+    count
+  }
+}

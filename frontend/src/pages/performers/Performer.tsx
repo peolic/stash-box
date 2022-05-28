@@ -8,6 +8,7 @@ import {
   usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
+  usePendingSceneEditsCount,
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";
@@ -34,6 +35,13 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
     id: performer.id,
   });
   const pendingEditCount = editData?.queryEdits.count;
+
+  const { data: sceneEditData } = usePendingSceneEditsCount({
+    type: TargetTypeEnum.SCENE,
+    containingType: TargetTypeEnum.PERFORMER,
+    containingID: performer.id,
+  });
+  const pendingSceneEditCount = sceneEditData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
@@ -130,6 +138,16 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
           <EditList type={TargetTypeEnum.PERFORMER} id={performer.id} />
+        </Tab>
+        <Tab
+          eventKey="scene-edits"
+          title={`Scene Edits${formatPendingEdits(pendingSceneEditCount)}`}
+          tabClassName={pendingSceneEditCount ? "PendingEditTab" : ""}
+        >
+          <EditList
+            type={TargetTypeEnum.SCENE}
+            containing={{ type: TargetTypeEnum.PERFORMER, id: performer.id }}
+          />
         </Tab>
       </Tabs>
     </>
