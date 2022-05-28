@@ -21,6 +21,7 @@ const (
 )
 
 var ErrEditTargetIDNotFound = fmt.Errorf("edit target not found")
+var ErrIncompatibleEditFilters = fmt.Errorf("incompatible edit filters")
 
 var (
 	editDBTable = newTable(editTable, func() interface{} {
@@ -225,6 +226,55 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.AddArg(*targetID, jsonID)
 	} else if q := filter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
+	}
+
+	if containingID := filter.ContainingID; containingID != nil {
+		if filter.ContainingType == nil || *filter.ContainingType == "" {
+			return nil, errors.New("ContainingType is required when ContainingID filter is used")
+		}
+		if filter.TargetType == nil || *filter.TargetType == "" {
+			return nil, errors.New("TargetType is required when ContainingID filter is used")
+		}
+		switch *filter.TargetType {
+
+		// scene
+		case models.TargetTypeEnumScene:
+			switch *filter.ContainingType {
+			// scene-performers
+			case models.TargetTypeEnumPerformer:
+				query.AddWhere(`
+				(jsonb_path_query_array(edits."data", '$.new_data.added_performers[*].performer_id')
+				|| jsonb_path_query_array(edits."data", '$.new_data.removed_performers[*].performer_id')
+				) @> to_jsonb(?::TEXT)`)
+				query.AddArg(containingID)
+			// scene-tags
+			case models.TargetTypeEnumTag:
+				query.AddWhere(`
+				(jsonb_path_query_array(edits."data", '$.new_data.added_tags[*]')
+				|| jsonb_path_query_array(edits."data", '$.new_data.removed_tags[*]')
+				) @> to_jsonb(?::TEXT)`)
+				query.AddArg(containingID)
+			// scene-studio
+			case models.TargetTypeEnumStudio:
+				query.AddWhere(`
+				(edits."data"->'new_data'->>'studio_id' = ?::TEXT
+				OR edits."data"->'old_data'->>'studio_id' = ?::TEXT)
+				`)
+				query.AddArg(containingID, containingID)
+			// unsupported types
+			default:
+				return nil, fmt.Errorf(`%w: TargetType "%s" and ContainingType "%s"`,
+					ErrIncompatibleEditFilters, *filter.TargetType, *filter.ContainingType)
+			}
+
+		// unsupported types
+		default:
+			return nil, fmt.Errorf(`%w: TargetType "%s" and ContainingType "%s"`,
+				ErrIncompatibleEditFilters, *filter.TargetType, *filter.ContainingType)
+
+		}
+	} else if q := filter.ContainingType; q != nil && *q != "" {
+		return nil, errors.New("ContainingID is required when ContainingType filter is used")
 	}
 
 	if q := filter.Status; q != nil {

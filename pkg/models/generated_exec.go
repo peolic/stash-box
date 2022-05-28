@@ -4129,6 +4129,10 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by containing type"""
+  containing_type: TargetTypeEnum
+  """Filter by containing id"""
+  containing_id: ID
 
   page: Int! = 1
   per_page: Int! = 25
@@ -30163,6 +30167,22 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
 			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "containing_type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("containing_type"))
+			it.ContainingType, err = ec.unmarshalOTargetTypeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTargetTypeEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "containing_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("containing_id"))
+			it.ContainingID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}

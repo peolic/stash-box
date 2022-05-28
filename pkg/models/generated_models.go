@@ -112,11 +112,15 @@ type EditQueryInput struct {
 	// Filter by target id
 	TargetID *uuid.UUID `json:"target_id"`
 	// Filter by favorite status
-	IsFavorite *bool             `json:"is_favorite"`
-	Page       int               `json:"page"`
-	PerPage    int               `json:"per_page"`
-	Direction  SortDirectionEnum `json:"direction"`
-	Sort       EditSortEnum      `json:"sort"`
+	IsFavorite *bool `json:"is_favorite"`
+	// Filter by containing type
+	ContainingType *TargetTypeEnum `json:"containing_type"`
+	// Filter by containing id
+	ContainingID *uuid.UUID        `json:"containing_id"`
+	Page         int               `json:"page"`
+	PerPage      int               `json:"per_page"`
+	Direction    SortDirectionEnum `json:"direction"`
+	Sort         EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {

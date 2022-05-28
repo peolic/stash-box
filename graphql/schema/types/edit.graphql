@@ -124,6 +124,10 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by containing type"""
+  containing_type: TargetTypeEnum
+  """Filter by containing id"""
+  containing_id: ID
 
   page: Int! = 1
   per_page: Int! = 25
